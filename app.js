@@ -5,6 +5,11 @@ const app = express();
 module.exports = app;
 
 app.use(morgan("dev"));
-app.use("/public", express.static(__dirname, "/public"));
+app.use("/public", express.static(__dirname + "/public"));
 app.use(require("body-parser").urlencoded({extended: false}));
 app.use("/wiki", require("./routes/wiki"));
+app.use("/users", require("./routes/user"));
+
+app.get("/", (req, res, next) => {
+    res.redirect("/wiki");
+});
