@@ -44,10 +44,10 @@ describe('Models', () => {
                        .then(response => expect(response.length).to.equal(5));
         });
         it('getPageBySlug gets page for given slug', () => {
-            return db.getPageBySlug("page5")
+            return db.getPageBySlug("Page_5")
                        .then(response => {
-                           expect(response.slug).to.equal("page5");
-                           expect(response.title).to.equal("Page5");
+                           expect(response.slug).to.equal("Page_5");
+                           expect(response.title).to.equal("Page 5");
                         });
         });
         it('Page1 is by User1', () => {

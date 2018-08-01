@@ -11,6 +11,12 @@ const Page = db.define('page', {
     slug:   {type: Sequelize.STRING, allowNull: false},
     content:{type: Sequelize.TEXT, allowNull: false},
     status: {type: Sequelize.ENUM('open', 'closed')}
+}, {
+    hooks: {
+        beforeValidate: function(page) {
+            page.slug = generateSlug(page.title);
+        }
+    }
 });
 
 User.hasMany(Page);
@@ -25,17 +31,17 @@ const seed = () => {
     return Promise.all(usernames.map(user => User.create({name: user, email: `${user}@email.com`})))
                   .then(([user1, user2, user3]) => {
                         return Promise.all([
-                            Page.create({title: "Page1", slug: "page1", content: "Page1 Content", status: 'open', userId: user1.id}),
-                            Page.create({title: "Page2", slug: "page2", content: "Page2 Content", status: 'open', userId: user1.id}),
-                            Page.create({title: "Page3", slug: "page3", content: "Page3 Content", status: 'closed', userId: user1.id}),
-                            Page.create({title: "Page4", slug: "page4", content: "Page4 Content", status: 'open', userId: user2.id}),
-                            Page.create({title: "Page5", slug: "page5", content: "Page5 Content", status: 'open', userId: user2.id}),
+                            Page.create({title: "Page1", content: "Page1 Content", status: 'open', userId: user1.id}),
+                            Page.create({title: "Page2", content: "Page2 Content", status: 'open', userId: user1.id}),
+                            Page.create({title: "Page3", content: "Page3 Content", status: 'closed', userId: user1.id}),
+                            Page.create({title: "Page4", content: "Page4 Content", status: 'open', userId: user2.id}),
+                            Page.create({title: "Page 5", content: "Page5 Content", status: 'open', userId: user2.id}),
                         ]);
                   });
 };
 
 const getAllUsers = () => {
-    return User.findAll({});
+    return User.findAll({include: [Page]});
 }
 
 const getUserById = (id) => {
@@ -43,7 +49,7 @@ const getUserById = (id) => {
 }
 
 const getAllPages = () => {
-    return Page.findAll({});
+    return Page.findAll({include: [User]});
 }
 
 const getPageBySlug = (slug) => {
@@ -51,16 +57,15 @@ const getPageBySlug = (slug) => {
 }
 
 const addPage = async (title, content, status, name, email)  => {
-    const slug = generateSlug(title); //TODO: As a hook (BeforeValidate)
     let user = await User.findOne({
         where: {name: name, email: email}
     });
     if(!user) {
         user = await User.create({name: name, email: email});
     }
-    const page = await Page.create({title: title, slug: slug, content: content, 
+    const page = await Page.create({title: title, content: content, 
                                     status: status, userId: user.id});
-    return page;
+    return Page.findById(page.id, {include: [User]});
 };
 
 const generateSlug = (title) => {
